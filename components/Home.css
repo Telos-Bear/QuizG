@@ -1,0 +1,15 @@
+.home-container{
+    background-color: rgb(14, 221, 59);
+}
+.pergunta{
+    color: rgb(0, 0, 0);
+    font-size: 20px;
+    font-weight: bold;
+    margin: 20px 0;
+    padding: 0 40px;
+    border-radius: 20px;
+    background-color: blue;
+    display: inline-block;
+    border : 2px solid blue;
+    margin: 100px;
+}
