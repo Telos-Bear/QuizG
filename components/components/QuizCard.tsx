@@ -39,7 +39,12 @@ const questions = [
   },
   {
     question: "Qual é o nome do jogo da série Zelda que se passa no mundo de Lorule?",
-    options: ["The Legend of Zelda: A Link Between Worlds", "The Legend of Zelda: Ocarina of Time", "The Legend of Zelda: The Wind Waker", "The Legend of Zelda: Twilight Princess"],
+    options: [
+      "The Legend of Zelda: A Link Between Worlds",
+      "The Legend of Zelda: Ocarina of Time",
+      "The Legend of Zelda: The Wind Waker",
+      "The Legend of Zelda: Twilight Princess"
+    ],
     answer: "The Legend of Zelda: A Link Between Worlds"
   },
   {
@@ -51,8 +56,9 @@ const questions = [
     question: "Qual é o nome do item que Link usa para voar em alguns jogos da série Zelda?",
     options: ["Paraglider", "Asa de Pássaro", "Asa de Dragão", "Asa de Morcego"],
     answer: "Paraglider"
-  },
+  }
 ];
+
 
 const QuizCard = () => {
   const [screen, setScreen] = useState<"menu" | "quiz" | "credits">("menu");
@@ -62,9 +68,10 @@ const QuizCard = () => {
   const [shuffledQuestions, setShuffledQuestions] = useState<typeof questions>([]);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [wrongAnswers, setWrongAnswers] = useState(0);
+  const [skippedQuestions, setSkippedQuestions] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
 
-  const progressAnim = useRef(new Animated.Value(0)).current; // ← animação da barra
+  const progressAnim = useRef(new Animated.Value(0)).current;
 
   const shuffleArray = <T,>(array: T[]): T[] => {
     return array
@@ -98,13 +105,11 @@ const QuizCard = () => {
       
       if (currentQuestion < shuffledQuestions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
-
         Animated.timing(progressAnim, {
           toValue: ((currentQuestion + 1) / shuffledQuestions.length) * 100,
           duration: 400,
           useNativeDriver: false,
         }).start();
-
       } else {
         Animated.timing(progressAnim, {
           toValue: 100,
@@ -116,31 +121,48 @@ const QuizCard = () => {
     }, 1000);
   };
 
+  const handlePass = () => {
+    if (selectedOption) return; // Evita passar enquanto opção estiver selecionada
+
+    setSkippedQuestions((prev) => prev + 1);
+
+    if (currentQuestion < shuffledQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      Animated.timing(progressAnim, {
+        toValue: ((currentQuestion + 1) / shuffledQuestions.length) * 100,
+        duration: 400,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      Animated.timing(progressAnim, {
+        toValue: 100,
+        duration: 400,
+        useNativeDriver: false,
+      }).start();
+      setQuizFinished(true);
+    }
+  };
+
   const handleRestartQuiz = () => {
     const reshuffled = shuffleArray(questions);
     setShuffledQuestions(reshuffled);
     setCurrentQuestion(0);
     setCorrectAnswers(0);
     setWrongAnswers(0);
+    setSkippedQuestions(0);
     setQuizFinished(false);
     setScreen("menu");
-    progressAnim.setValue(0); // reseta a barra de progresso
+    progressAnim.setValue(0);
   };
 
   if (screen === "menu") {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Bem-vindo ao Quiz Zelda!</Text>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => setScreen("quiz")}
-        >
+        <TouchableOpacity style={styles.menuButton} onPress={() => setScreen("quiz")}>
           <Text style={styles.menuButtonText}>Jogar</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => setScreen("credits")}
-        >
+        <TouchableOpacity style={styles.menuButton} onPress={() => setScreen("credits")}>
           <Text style={styles.menuButtonText}>Créditos</Text>
         </TouchableOpacity>
       </View>
@@ -153,10 +175,7 @@ const QuizCard = () => {
         <Text style={styles.title}>Créditos</Text>
         <Text style={styles.creditText}>Desenvolvido por: João Gabriel Lima Cochet Agra</Text>
         <Text style={styles.creditText}>Inspiração: Série Zelda</Text>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => setScreen("menu")}
-        >
+        <TouchableOpacity style={styles.menuButton} onPress={() => setScreen("menu")}>
           <Text style={styles.menuButtonText}>Voltar</Text>
         </TouchableOpacity>
       </View>
@@ -170,6 +189,7 @@ const QuizCard = () => {
         <View style={styles.card}>
           <Text style={styles.resultText}>Acertos: {correctAnswers}</Text>
           <Text style={styles.resultText}>Erros: {wrongAnswers}</Text>
+          <Text style={styles.resultText}>Skip: {skippedQuestions}</Text>
           <TouchableOpacity style={styles.restartButton} onPress={handleRestartQuiz}>
             <Text style={styles.restartButtonText}>Voltar ao Menu</Text>
           </TouchableOpacity>
@@ -186,7 +206,6 @@ const QuizCard = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Quiz</Text>
 
-      {/* Barra de Progresso */}
       <View style={styles.progressBarContainer}>
         <Animated.View
           style={[
@@ -221,8 +240,8 @@ const QuizCard = () => {
           </TouchableOpacity>
         ))}
 
-        <TouchableOpacity style={styles.passButton}>
-          <Text style={styles.passText}>PASS</Text>
+        <TouchableOpacity style={styles.passButton} onPress={handlePass}>
+          <Text style={styles.passText}>SKIP</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -312,7 +331,6 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     textAlign: "center",
   },
-  // Barra de progresso
   progressBarContainer: {
     width: '85%',
     height: 10,
