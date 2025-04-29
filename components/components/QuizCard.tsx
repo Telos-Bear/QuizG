@@ -1,21 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-
-
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 
 const questions = [
   {
     question: "Qual é o nome do protagonista da série Zelda?",
-    options: [
-      "Link",
-      "Zelda",
-      "Epona",
-      "Navi"
-    ],
+    options: ["Link", "Zelda", "Epona", "Navi"],
     answer: "Link"
   },
   {
-    question: "Qual é o genero do jogo Zelda?",
+    question: "Qual é o gênero do jogo Zelda?",
     options: ["Aventura", "RPG", "Ação", "Estratégia"],
     answer: "Aventura"
   },
@@ -37,7 +30,7 @@ const questions = [
   {
     question: "Qual é o nome do vilão principal da série Zelda?",
     options: ["Ganondorf", "Zant", "Dark Link", "Ganon"],
-    answer:'Ganondorf'
+    answer: "Ganondorf"
   },
   {
     question: "Qual é o nome do reino onde a maioria dos jogos da série Zelda se passa?",
@@ -55,22 +48,23 @@ const questions = [
     answer: "Botas de Zora"
   },
   {
-    question: "Qual é o nome do item que Link usa para voar em alguns jogos da serie Zelda?",
+    question: "Qual é o nome do item que Link usa para voar em alguns jogos da série Zelda?",
     options: ["Paraglider", "Asa de Pássaro", "Asa de Dragão", "Asa de Morcego"],
     answer: "Paraglider"
   },
 ];
 
 const QuizCard = () => {
-
-  // Estados para controlar o quiz
+  const [screen, setScreen] = useState<"menu" | "quiz" | "credits">("menu");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
   const [shuffledQuestions, setShuffledQuestions] = useState<typeof questions>([]);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [wrongAnswers, setWrongAnswers] = useState(0);
-  const [quizFinished, setQuizFinished] = useState(false); // NOVO estado para saber se o quiz acabou
+  const [quizFinished, setQuizFinished] = useState(false);
+
+  const progressAnim = useRef(new Animated.Value(0)).current; // ← animação da barra
 
   const shuffleArray = <T,>(array: T[]): T[] => {
     return array
@@ -101,10 +95,23 @@ const QuizCard = () => {
 
     setTimeout(() => {
       setSelectedOption(null);
+      
       if (currentQuestion < shuffledQuestions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
+
+        Animated.timing(progressAnim, {
+          toValue: ((currentQuestion + 1) / shuffledQuestions.length) * 100,
+          duration: 400,
+          useNativeDriver: false,
+        }).start();
+
       } else {
-        setQuizFinished(true); // Mostra a tela de resultado
+        Animated.timing(progressAnim, {
+          toValue: 100,
+          duration: 400,
+          useNativeDriver: false,
+        }).start();
+        setQuizFinished(true);
       }
     }, 1000);
   };
@@ -116,34 +123,87 @@ const QuizCard = () => {
     setCorrectAnswers(0);
     setWrongAnswers(0);
     setQuizFinished(false);
+    setScreen("menu");
+    progressAnim.setValue(0); // reseta a barra de progresso
   };
 
-  if (shuffledQuestions.length === 0) return null;
+  if (screen === "menu") {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Bem-vindo ao Quiz Zelda!</Text>
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() => setScreen("quiz")}
+        >
+          <Text style={styles.menuButtonText}>Jogar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() => setScreen("credits")}
+        >
+          <Text style={styles.menuButtonText}>Créditos</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (screen === "credits") {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Créditos</Text>
+        <Text style={styles.creditText}>Desenvolvido por: João Gabriel Lima Cochet Agra</Text>
+        <Text style={styles.creditText}>Inspiração: Série Zelda</Text>
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() => setScreen("menu")}
+        >
+          <Text style={styles.menuButtonText}>Voltar</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (quizFinished) {
-    // Tela de Resultado
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Resultado do Quiz</Text>
         <View style={styles.card}>
           <Text style={styles.resultText}>Acertos: {correctAnswers}</Text>
           <Text style={styles.resultText}>Erros: {wrongAnswers}</Text>
-
           <TouchableOpacity style={styles.restartButton} onPress={handleRestartQuiz}>
-            <Text style={styles.restartButtonText}>Recomeçar</Text>
+            <Text style={styles.restartButtonText}>Voltar ao Menu</Text>
           </TouchableOpacity>
         </View>
       </View>
     );
   }
 
+  if (shuffledQuestions.length === 0) return null;
+
   const question = shuffledQuestions[currentQuestion];
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Quiz</Text>
+
+      {/* Barra de Progresso */}
+      <View style={styles.progressBarContainer}>
+        <Animated.View
+          style={[
+            styles.progressBarFill,
+            {
+              width: progressAnim.interpolate({
+                inputRange: [0, 100],
+                outputRange: ['0%', '100%'],
+              }),
+            },
+          ]}
+        />
+      </View>
+
       <View style={styles.card}>
         <Text style={styles.question}>{question.question}</Text>
+
         {shuffledOptions.map((option, index) => (
           <TouchableOpacity
             key={index}
@@ -151,8 +211,8 @@ const QuizCard = () => {
               styles.optionButton,
               selectedOption === option && {
                 backgroundColor:
-                  option === question.answer ? "#4CAF50" : "#F44336"
-              }
+                  option === question.answer ? "#4CAF50" : "#F44336",
+              },
             ]}
             onPress={() => handleOptionPress(option)}
             disabled={!!selectedOption}
@@ -160,6 +220,7 @@ const QuizCard = () => {
             <Text style={styles.optionText}>{option}</Text>
           </TouchableOpacity>
         ))}
+
         <TouchableOpacity style={styles.passButton}>
           <Text style={styles.passText}>PASS</Text>
         </TouchableOpacity>
@@ -168,53 +229,52 @@ const QuizCard = () => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E6F0FA',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#333'
+    color: '#333',
   },
   card: {
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 25,
     width: '85%',
-    elevation: 5
+    elevation: 5,
   },
   question: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 20,
-    textAlign: 'center'
+    textAlign: 'center',
   },
   optionButton: {
     backgroundColor: '#F1F1F1',
     padding: 12,
     borderRadius: 8,
-    marginBottom: 12
+    marginBottom: 12,
   },
   optionText: {
     textAlign: 'center',
-    fontSize: 16
+    fontSize: 16,
   },
   passButton: {
     backgroundColor: '#FF6B6B',
     padding: 10,
     borderRadius: 8,
-    marginTop: 15
+    marginTop: 15,
   },
   passText: {
     color: 'white',
     textAlign: 'center',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   resultText: {
     fontSize: 24,
@@ -228,12 +288,42 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 20,
   },
-  
   restartButtonText: {
     color: "#FFF",
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  menuButton: {
+    backgroundColor: "#4CAF50",
+    padding: 20,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: "70%",
+    alignItems: "center",
+  },
+  menuButtonText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  creditText: {
+    fontSize: 18,
+    marginVertical: 10,
+    textAlign: "center",
+  },
+  // Barra de progresso
+  progressBarContainer: {
+    width: '85%',
+    height: 10,
+    backgroundColor: '#eee',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#4CAF50',
   },
 });
 
