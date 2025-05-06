@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Image } from 'react-native';
+import EstacioLogo from '../../public/logo.png';
+
 
 const questions = [
   {
@@ -172,9 +174,13 @@ const QuizCard = () => {
   if (screen === "credits") {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Créditos</Text>
-        <Text style={styles.creditText}>Desenvolvido por: João Gabriel Lima Cochet Agra</Text>
+        <Image source={EstacioLogo} style={styles.logo} resizeMode="contain" />
+        <Text style={styles.creditTitle}>Campus R9 - Taquara</Text>
+        <Text style={styles.creditText}>Desenvolvido por:</Text>
+        <Text style={styles.creditText}>[João Gabriel Lima Cochet Agra 202502337795]</Text>
+        <Text style={styles.creditText}>[Jorge Lopes da Rocha Neto 202502196385]</Text>
         <Text style={styles.creditText}>Inspiração: Série Zelda</Text>
+        <Text style={styles.creditText}>Professor: Antônio Candido</Text>
         <TouchableOpacity style={styles.menuButton} onPress={() => setScreen("menu")}>
           <Text style={styles.menuButtonText}>Voltar</Text>
         </TouchableOpacity>
@@ -342,6 +348,17 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: '100%',
     backgroundColor: '#4CAF50',
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    marginBottom: 10,
+  },
+  creditTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
   },
 });
 
