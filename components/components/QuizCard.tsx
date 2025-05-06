@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Image } from 'react-native';
-import EstacioLogo from "../../assets/logo.png"
 
-
+const EstacioLogo = require("../../assets/logo.png");
 const questions = [
   {
     question: "Qual é o nome do protagonista da série Zelda?",
@@ -177,8 +176,8 @@ const QuizCard = () => {
         <Image source={EstacioLogo} style={styles.logo} resizeMode="contain" />
         <Text style={styles.creditTitle}>Campus R9 - Taquara</Text>
         <Text style={styles.creditText}>Desenvolvido por:</Text>
-        <Text style={styles.creditText}>[João Gabriel Lima Cochet Agra 202502337795]</Text>
-        <Text style={styles.creditText}>[Jorge Lopes da Rocha Neto 202502196385]</Text>
+        <Text style={styles.creditText}>João Gabriel Lima Cochet Agra 202502337795</Text>
+        <Text style={styles.creditText}>Jorge Lopes da Rocha Neto 202502196385</Text>
         <Text style={styles.creditText}>Inspiração: Série Zelda</Text>
         <Text style={styles.creditText}>Professor: Antônio Candido</Text>
         <TouchableOpacity style={styles.menuButton} onPress={() => setScreen("menu")}>
@@ -257,7 +256,7 @@ const QuizCard = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E6F0FA',
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
   },
