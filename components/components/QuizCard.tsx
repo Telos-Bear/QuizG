@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Image } from 'react-native';
-import EstacioLogo from '../../public/logo.png';
+import EstacioLogo from "../../assets/logo.png"
 
 
 const questions = [
