@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Image, ImageBackground } from 'react-native';
 
+const BackgroundImage = require("../../assets/Zelda.png");
 const EstacioLogo = require("../../assets/logo.png");
 const questions = [
   {
@@ -103,7 +104,7 @@ const QuizCard = () => {
 
     setTimeout(() => {
       setSelectedOption(null);
-      
+
       if (currentQuestion < shuffledQuestions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
         Animated.timing(progressAnim, {
@@ -123,7 +124,7 @@ const QuizCard = () => {
   };
 
   const handlePass = () => {
-    if (selectedOption) return; // Evita passar enquanto opção estiver selecionada
+    if (selectedOption) return;
 
     setSkippedQuestions((prev) => prev + 1);
 
@@ -158,15 +159,17 @@ const QuizCard = () => {
 
   if (screen === "menu") {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Bem-vindo ao Quiz Zelda!</Text>
-        <TouchableOpacity style={styles.menuButton} onPress={() => setScreen("quiz")}>
-          <Text style={styles.menuButtonText}>Jogar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuButton} onPress={() => setScreen("credits")}>
-          <Text style={styles.menuButtonText}>Créditos</Text>
-        </TouchableOpacity>
-      </View>
+      <ImageBackground source={BackgroundImage} style={styles.background}>
+        <View style={styles.overlay}>
+          <Text style={styles.title}>Bem-vindo ao Quiz Zelda!</Text>
+          <TouchableOpacity style={styles.menuButton} onPress={() => setScreen("quiz")}>
+            <Text style={styles.menuButtonText}>Jogar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuButton} onPress={() => setScreen("credits")}>
+            <Text style={styles.menuButtonText}>Créditos</Text>
+          </TouchableOpacity>
+        </View>
+      </ImageBackground>
     );
   }
 
@@ -233,10 +236,12 @@ const QuizCard = () => {
             key={index}
             style={[
               styles.optionButton,
-              selectedOption === option && {
-                backgroundColor:
-                  option === question.answer ? "#4CAF50" : "#F44336",
-              },
+              selectedOption &&
+              (option === question.answer
+                ? { backgroundColor: "#4CAF50" }
+                : selectedOption === option
+                ? { backgroundColor: "#F44336" }
+                : null),
             ]}
             onPress={() => handleOptionPress(option)}
             disabled={!!selectedOption}
@@ -259,6 +264,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  background: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlay: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   title: {
     fontSize: 22,
